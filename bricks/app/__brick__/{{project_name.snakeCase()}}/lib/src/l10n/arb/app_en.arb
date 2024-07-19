@@ -1,0 +1,6 @@
+{
+  "appTitle": "{{project_name.titleCase()}}",
+  "@appTitle": {
+    "description": "The title of the application"
+  }
+}
