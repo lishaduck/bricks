@@ -1,0 +1,6 @@
+dartdoc:
+  showUndocumentedCategories: true
+  includeExternal: ["test/helpers/*.dart"]
+  linkToSource:
+    uriTemplate: "https://github.com/{{user}}/{{repo}}/blob/{{main_branch}}/%f%#L%l%"
+    root: "."

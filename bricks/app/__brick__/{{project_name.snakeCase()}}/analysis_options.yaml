@@ -1,0 +1,81 @@
+# This file configures the analyzer, which statically analyzes Dart code to
+# check for errors, warnings, and lints.
+#
+# The issues identified by the analyzer are surfaced in the UI of Dart-enabled
+# IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
+# invoked from the command line by running `flutter analyze`.
+
+# The following line activates a set of recommended lints for Flutter apps,
+# packages, and plugins designed to encourage good coding practices.
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - "lib/gen/**"
+    - "lib/src/l10n/app_localizations*.dart"
+    - "build/**"
+    - "**/*.g.dart"
+    - "**/*.gr.dart"
+    - "**/*.gen.dart"
+    - "**/*.freezed.dart"
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    close_sinks: true
+  plugins:
+    - custom_lint
+
+linter:
+  # The lint rules applied to this project can be customized in the
+  # section below to disable rules from the `package:flutter_lints/flutter.yaml`
+  # included above or to enable additional rules. A list of all available lints
+  # and their documentation is published at https://dart.dev/lints.
+  #
+  # Instead of disabling a lint rule for the entire project in the
+  # section below, it can also be suppressed for a single line of code
+  # or a specific dart file by using the `// ignore: name_of_lint` and
+  # `// ignore_for_file: name_of_lint` syntax on the line or in the file
+  # producing the lint.
+  rules:
+    # Differences from VGA
+    prefer_relative_imports: true
+    always_use_package_imports: false
+    lines_longer_than_80_chars: false
+    one_member_abstracts: false
+
+    # Extra rules, not in VGA
+    avoid_classes_with_only_static_members: true
+    avoid_implementing_value_types: true
+    avoid_types_on_closure_parameters: true
+    deprecated_member_use_from_same_package: true
+    diagnostic_describe_all_properties: true
+    no_literal_bool_comparisons: true
+    prefer_foreach: true
+    prefer_mixin: true
+    type_literal_in_constant_pattern: true
+    unnecessary_null_aware_operator_on_extension_on_nullable: true
+    unreachable_from_main: true
+
+    # Temporary suppression of rules in VGA
+    public_member_api_docs: false
+
+    # Rules with false-positives, not in VGA
+    discarded_futures: true
+    close_sinks: true
+
+    # Experimental rules, not yet in VGA
+    annotate_redeclares: true
+
+    # New/updated rules, not yet in VGA
+    unintended_html_in_doc_comment: true
+    invalid_runtime_check_with_js_interop_types: true
+    unnecessary_library_name: true
+    document_ignores: true
+    avoid_catches_without_on_clauses: true
+
+    # Newly (or soon-to-be) deprecated rules, still in VGA
+    unnecessary_await_in_return: false
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options

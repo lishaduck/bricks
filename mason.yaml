@@ -1,3 +1,5 @@
 bricks:
+  application:
+    path: bricks/app
   monorepo:
     path: bricks/monorepo
