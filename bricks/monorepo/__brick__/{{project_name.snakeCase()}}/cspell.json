@@ -1,0 +1,33 @@
+{
+  "version": "0.2",
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "dictionaries": [
+    "project",
+  ],
+  "dictionaryDefinitions": [
+    {
+      "name": "project",
+      "path": "./project_words.txt",
+      "description": "Words used in this project.",
+      "addWords": true
+    },
+  ],
+  "useGitignore": true,
+  "globRoot": ".",
+  "ignorePaths": [
+    "project_words.txt"
+  ],
+  "features": {
+    "weighted-suggestions": true
+  },
+  "allowCompoundWords": true,
+  "caseSensitive": true,
+  "language": "en-US",
+  "validateDirectives": true,
+  "overrides": [
+    {
+      "language": "es,en-US",
+      "filename": "lib/l10n/arb/app_es.arb"
+    }
+  ]
+}
