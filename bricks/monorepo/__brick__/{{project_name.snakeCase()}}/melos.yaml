@@ -1,0 +1,33 @@
+name: "{{project_name.snakeCase()}}"
+
+packages:
+  - packages/**
+
+command:
+  bootstrap:
+    enforceLockfile: true
+
+    environment:
+      sdk: ">=3.4.0 <4.0.0"
+
+    hooks:
+      post: melos run gen-l10n && melos run gen
+
+scripts:
+  custom_lint:
+    description: run custom lint
+    exec: dart run custom_lint --fatal-infos
+  gen-l10n:
+    description: generate l10n files
+    exec: flutter gen-l10n
+    packageFilters:
+      flutter: true
+  gen:
+    description: run build_runner
+    exec: dart run build_runner build --delete-conflicting-outputs
+  gen:watch:
+    description: run build_runner
+    exec: dart run build_runner watch
+  test:
+    description: run tests
+    exec: dart run very_good_cli:very_good test --coverage --test-randomize-ordering-seed random

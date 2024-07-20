@@ -1,0 +1,128 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "melos",
+      "script": "gen",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "label": "Dart: run build_runner build",
+      "detail": "Run a build_runner build.",
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "icon": {
+        "color": "terminal.ansiCyan",
+        "id": "gear"
+      },
+      "dependsOn": ["Flutter: gen-l10n"]
+    },
+    {
+      "type": "melos",
+      "script": "gen:watch",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "label": "Dart: watch build_runner",
+      "detail": "Continuously run a build_runner build.",
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "icon": {
+        "color": "terminal.ansiCyan",
+        "id": "gear"
+      },
+      "dependsOn": ["Flutter: gen-l10n"]
+    },
+    {
+      "type": "dart",
+      "command": "dart",
+      "cwd": ".",
+      "args": ["doc", "."],
+      "problemMatcher": [],
+      "group": "none",
+      "label": "Dart: doc",
+      "detail": "Generate the documentation.",
+      "icon": {
+        "color": "terminal.ansiGreen",
+        "id": "book"
+      }
+    },
+    {
+      "type": "flutter",
+      "command": "flutter",
+      "args": ["build", "${input:target}", "--release"],
+      "problemMatcher": [],
+      "group": "build",
+      "label": "Flutter: build",
+      "detail": "Build a flutter app.",
+      "icon": {
+        "color": "terminal.ansiBlue",
+        "id": "gear"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/packages/app"
+      }
+    },
+    {
+      "type": "flutter",
+      "command": "flutter",
+      "args": ["gen-l10n"],
+      "problemMatcher": [],
+      "group": "build",
+      "label": "Flutter: gen-l10n",
+      "detail": "Generate the localization files.",
+      "icon": {
+        "color": "terminal.ansiYellow",
+        "id": "comment-discussion"
+      }
+    },
+    {
+      "type": "dart",
+      "command": "dart",
+      "cwd": ".",
+      "args": [
+        "run",
+        "very_good_cli:very_good",
+        "test",
+        "--coverage",
+        "--test-randomize-ordering-seed",
+        "random"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "label": "Very Good Test",
+      "detail": "Run tests with the very_good_cli.",
+      "icon": {
+        "color": "terminal.ansiWhite",
+        "id": "beaker"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "target",
+      "options": [
+        { "label": "Repository", "value": "arr" },
+        { "label": "Android APK", "value": "apk" },
+        { "label": "Android App Bundle", "value": "appbundle" },
+        { "label": "Flutter assets directory", "value": "bundle" },
+        { "label": "iOS", "value": "ios" },
+        { "label": ".xcframework (iOS)", "value": "ios-framework" },
+        { "label": "App Store Bundle", "value": "ipa" },
+        { "label": "macOS", "value": "macos" },
+        { "label": ".xcframework (macOS)", "value": "macos-framework" },
+        { "label": "Webapp bundle", "value": "web" },
+        { "label": "Windows", "value": "windows" }
+      ],
+      "type": "pickString",
+      "description": "the target to target",
+      "default": "web"
+    }
+  ]
+}

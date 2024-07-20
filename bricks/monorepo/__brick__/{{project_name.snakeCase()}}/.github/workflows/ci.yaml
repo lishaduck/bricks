@@ -1,0 +1,346 @@
+---
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - "{{main_branch}}"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  merge_group:
+  schedule:
+    - cron: "0 14 * * 1" # every monday at 9 in the morning CST
+  workflow_dispatch:
+
+env:
+  CI: true
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    name: Setup
+    needs: []
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: 📚 Git checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          submodules: recursive
+          clean: true
+          persist-credentials: false
+          set-safe-directory: true
+      - name: 🐦 Set up Flutter
+        id: flutter
+        uses: subosito/flutter-action@44ac965b96f18d999802d4b807e3256d5a3f9fa1 # v2.16.0
+        with:
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - name: 🌐 Disable analytics
+        run: flutter --disable-analytics
+      - name: 📦 Install dependencies
+        uses: bluefireteam/melos-action@6085791af7036f6366c9a4b9d55105c0ef9c6388 # v3
+        with:
+          run-bootstrap: true
+      - name: ⚙️ Cache generated files
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: |
+            .dart_tool/
+            lib/gen/*.gen.dart
+            lib/src/features/**/*.g.dart
+            lib/src/features/**/*.freezed.dart
+            lib/src/utils/*.g.dart
+            lib/src/utils/*.freezed.dart
+            lib/src/app/*.gr.dart
+            lib/src/app/*.gm.dart
+            lib/src/l10n/app_localizations.dart
+            lib/src/l10n/app_localizations_*.dart
+          key: ${{ runner.os }}-${{ steps.flutter.outputs.CHANNEL }}-dart-${{ hashFiles('**/build.yaml') }}
+      - name: 🔌 Generate files
+        run: |
+          melos run gen-l10n
+          melos run gen
+
+  build:
+    name: Build
+    needs: ["setup"]
+    timeout-minutes: ${{ (matrix.target == 'web') && 5 || 10 }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - web
+          - appbundle
+          # - ios
+          # - macos
+          # - windows
+        include:
+          - target: web
+            os: ubuntu-latest
+            flutter-flags: --release
+          - target: appbundle
+            os: ubuntu-latest
+            flutter-flags: --debug --no-tree-shake-icons --no-shrink
+          # - target: ios
+          #   os: macos-latest
+          #   flutter-flags: --debug --no-tree-shake-icons
+          # - target: macos
+          #   os: macos-latest
+          #   flutter-flags: --debug --no-tree-shake-icons
+          # - target: windows
+          #   os: windows-latest
+          #   flutter-flags: --debug --no-tree-shake-icons
+
+    steps:
+      - name: 📚 Git checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          submodules: recursive
+          clean: true
+          persist-credentials: false
+          set-safe-directory: true
+      - name: 🐦 Set up Flutter
+        id: flutter
+        uses: subosito/flutter-action@44ac965b96f18d999802d4b807e3256d5a3f9fa1 # v2.16.0
+        with:
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - name: 🌐 Disable analytics
+        run: flutter --disable-analytics
+      - name: 📦 Install dependencies
+        uses: bluefireteam/melos-action@6085791af7036f6366c9a4b9d55105c0ef9c6388 # v3
+        with:
+          run-bootstrap: true
+      - name: ⚙️ Cache generated files
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: |
+            .dart_tool/
+            lib/gen/*.gen.dart
+            lib/src/features/**/*.g.dart
+            lib/src/features/**/*.freezed.dart
+            lib/src/utils/*.g.dart
+            lib/src/utils/*.freezed.dart
+            lib/src/app/*.gr.dart
+            lib/src/app/*.gm.dart
+            lib/src/l10n/app_localizations.dart
+            lib/src/l10n/app_localizations_*.dart
+          key: ${{ runner.os }}-${{ steps.flutter.outputs.CHANNEL }}-dart-${{ hashFiles('**/build.yaml') }}
+      - name: 🔌 Generate files
+        run: |
+          melos run gen-l10n
+          melos run gen
+      - name: 🔧 Build
+        run: |
+          flutter build ${{ matrix.target }} ${{ matrix.flutter-flags }}
+        working-directory: packages/app/
+      - name: ⚙️ Upload build
+        if: matrix.target == 'web'
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+        with:
+          name: app-${{ matrix.target }}-build
+          path: "./packages/app/build/"
+          if-no-files-found: error
+
+  lint:
+    name: Linting
+    needs: ["setup"]
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📚 Git checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          submodules: recursive
+          clean: true
+          persist-credentials: false
+          set-safe-directory: true
+      - name: 🐦 Set up Flutter
+        id: flutter
+        uses: subosito/flutter-action@44ac965b96f18d999802d4b807e3256d5a3f9fa1 # v2.16.0
+        with:
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - name: 🌐 Disable analytics
+        run: flutter --disable-analytics
+      - name: 📦 Install dependencies
+        uses: bluefireteam/melos-action@6085791af7036f6366c9a4b9d55105c0ef9c6388 # v3
+        with:
+          run-bootstrap: true
+      - name: ⚙️ Cache generated files
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: |
+            .dart_tool/
+            lib/src/gen/*.gen.dart
+            lib/src/features/**/*.g.dart
+            lib/src/features/**/*.freezed.dart
+            lib/src/utils/*.g.dart
+            lib/src/utils/*.freezed.dart
+            lib/src/app/*.gr.dart
+            lib/src/app/*.gm.dart
+            lib/src/l10n/app_localizations.dart
+            lib/src/l10n/app_localizations_*.dart
+          key: ${{ runner.os }}-${{ steps.flutter.outputs.CHANNEL }}-dart-${{ hashFiles('**/build.yaml') }}
+      - name: 🔌 Generate files
+        run: |
+          melos run gen-l10n
+          melos run gen
+      - name: 🕵️ Analyze project source
+        run: melos analyze --fatal-infos
+      - name: 🕵️ Run Custom Lint Rules
+        run: melos run custom_lint
+
+  test:
+    name: Testing
+    needs: ["setup"]
+    timeout-minutes: 7
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📚 Git checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          submodules: recursive
+          clean: true
+          persist-credentials: false
+          set-safe-directory: true
+      - name: 🐦 Set up Flutter
+        id: flutter
+        uses: subosito/flutter-action@44ac965b96f18d999802d4b807e3256d5a3f9fa1 # v2.16.0
+        with:
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - name: 🌐 Disable analytics
+        run: flutter --disable-analytics
+      - name: 📦 Install dependencies
+        uses: bluefireteam/melos-action@6085791af7036f6366c9a4b9d55105c0ef9c6388 # v3
+        with:
+          run-bootstrap: true
+      - name: ⚙️ Cache generated files
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: |
+            .dart_tool/
+            lib/src/gen/*.gen.dart
+            lib/src/features/**/*.g.dart
+            lib/src/features/**/*.freezed.dart
+            lib/src/utils/*.g.dart
+            lib/src/utils/*.freezed.dart
+            lib/src/app/*.gr.dart
+            lib/src/app/*.gm.dart
+            lib/src/l10n/app_localizations.dart
+            lib/src/l10n/app_localizations_*.dart
+          key: ${{ runner.os }}-${{ steps.flutter.outputs.CHANNEL }}-dart-${{ hashFiles('**/build.yaml') }}
+      - name: 🔌 Generate files
+        run: |
+          melos run gen-l10n
+          melos run gen
+      - name: 🧪 Run tests
+        run: melos run test
+      - name: 📊 Upload code coverage
+        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4.5.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: packages/*/coverage/lcov.info
+          fail_ci_if_error: true
+          verbose: true
+
+  format:
+    name: Formatting
+    needs: ["setup"]
+    timeout-minutes: 3
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📚 Git checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          submodules: recursive
+          clean: true
+          persist-credentials: false
+          set-safe-directory: true
+      - name: 🐦 Set up Flutter
+        id: flutter
+        uses: subosito/flutter-action@44ac965b96f18d999802d4b807e3256d5a3f9fa1 # v2.16.0
+        with:
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - name: 🌐 Disable analytics
+        run: flutter --disable-analytics
+      - name: ✨ Verify formatting
+        run: melos format --output=none --set-exit-if-changed
+
+  spell-check:
+    name: Check Spelling
+    needs: []
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📚 Git Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          submodules: recursive
+          clean: true
+          persist-credentials: false
+          set-safe-directory: true
+
+      - name: 🪄 Spell Check
+        uses: streetsidesoftware/cspell-action@2db9e5fb6d08776bed383767ef4e5dd84650546c # v6.7.1
+        with:
+          files: |
+            **/*.md
+            **/*.dart
+            **/*.yaml
+            **/*.toml
+            **/*.json
+          incremental_files_only: false
+
+  link-check:
+    name: Check Links
+    needs: []
+    timeout-minutes: 2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🪄 Link check
+        uses: gaurav-nelson/github-action-markdown-link-check@d53a906aa6b22b8979d33bc86170567e619495ec # 1.0.15
+        with:
+          use-quiet-mode: "yes"
+          use-verbose-mode: "yes"
+          base-branch: "{{main_branch}}"
+
+  markdownlint:
+    name: Lint Markdown
+    needs: []
+    timeout-minutes: 4
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📚 Git Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          submodules: recursive
+          clean: true
+          persist-credentials: false
+          set-safe-directory: true
+      - name: 🕵️ Markdown linting
+        uses: DavidAnson/markdownlint-cli2-action@b4c9feab76d8025d1e83c653fa3990936df0e6c8 # v16.0.0
+        id: markdownlint
+        with:
+          fix: true
+          # Surprisingly, the default is to only lint the project root.
+          globs: |
+            **/*.md

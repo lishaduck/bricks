@@ -1,0 +1,2 @@
+.mason
+mason.lock # Shouldn't be checked in for path dependencies

@@ -1,0 +1,6 @@
+{
+  "config": {
+    "line-length": false, // no one cares
+    "no-emphasis-as-heading": false // to many false positives
+  }
+}
