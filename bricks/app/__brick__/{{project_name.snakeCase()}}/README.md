@@ -1,9 +1,11 @@
 # {{project_name.titleCase()}}
 
-[![Powered by Mason](https://img.shields.io/endpoint?url=https%3A%2F%2Ftinyurl.com%2Fmason-badge)](https://github.com/lishaduck/bricks)
+[![Powered by Mason][mason_badge]][mason_link]
 [![style: very good analysis][very_good_analysis_badge]][very_good_analysis_link]
 
 {{description}}.
 
+[mason_badge]: https://img.shields.io/endpoint?url=https%3A%2F%2Ftinyurl.com%2Fmason-badge
+[mason_link]: https://github.com/lishaduck/bricks
 [very_good_analysis_badge]: https://img.shields.io/badge/style-very_good_analysis-B22C89.svg
 [very_good_analysis_link]: https://pub.dev/packages/very_good_analysis
