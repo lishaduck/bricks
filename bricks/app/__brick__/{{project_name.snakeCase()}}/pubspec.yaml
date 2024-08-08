@@ -33,6 +33,11 @@ environment:
 # versions available, run `flutter pub outdated`.
 
 dependencies:
+  {{#use_serverpod}}
+  {{project_name.snakeCase()}}_client: any
+  serverpod_flutter: 2.0.2
+  {{/use_serverpod}}
+
   auto_route: ^8.3.0
   build_version: ^2.1.1
   # The following adds the Cupertino Icons font to your application.

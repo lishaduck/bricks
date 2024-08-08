@@ -56,3 +56,8 @@ vars:
     description: The main branch of your repository
     default: main
     prompt: What is the main branch of your repository?
+  use_serverpod:
+    type: boolean
+    description: Include Serverpod support
+    default: false
+    prompt: Include Serverpod support?

@@ -1,0 +1,39 @@
+import 'package:{{project_name.snakeCase()}}_client/{{project_name.snakeCase()}}_client.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+{{#use_serverpod}}import "../env/env.dart";
+{{/use_serverpod}}
+part 'client.g.dart';
+
+/// Represent the Serverpod API information.
+@freezed
+@immutable
+sealed class Api with _$Api implements ApiRepository {
+  /// Create a new, immutable instance of [Api].
+  const factory Api({
+    required String url,
+  }) = _Api;
+}
+
+/// A repository for API information.
+abstract interface class ApiRepository {
+  /// The URL of the Serverpod API.
+  String get url;
+}
+
+/// The API information, gotten via passed in environment variables.
+const ApiRepository apiInfo = Api(
+  url: Env.apiEndpoint,
+);
+
+@Riverpod(keepAlive: true)
+ConnectivityMonitor _connectivityMonitor(_ConnectivityMonitorRef ref) {
+  return FlutterConnectivityMonitor();
+}
+
+/// Get the Serverpod client.
+@Riverpod(keepAlive: true)
+Client client(ClientRef ref) {
+  return Client(apiInfo.url)
+    ..connectivityMonitor = ref.watch(_connectivityMonitor);
+}
